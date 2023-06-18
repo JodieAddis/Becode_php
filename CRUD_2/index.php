@@ -177,7 +177,7 @@
             <label for="birth_date">Birth date</label>
             <input type="date" name="birth_date"><br>
             <label for="checkbox">Fidelity customer card</label>
-            <input type="checkbox" name="checkbox"><br>
+            <input type="checkbox" name="checkbox[]"><br>
             <label for="number_card">Card number</label>
             <input type="number" name="number_card"><br>
             <input type="submit" name="Create" value="Create" id="Create">
@@ -190,7 +190,7 @@
                 $lastname = $_POST['lastname'];
                 $firstname = $_POST['firstname'];
                 $birth_date = $_POST['birth_date']; 
-                $card_fid = $_POST['checkbox'];
+                $card_fid = $_POST['checkbox']; 
                 $number_card = $_POST['number_card']; 
                 if(isset($_POST['Create'])){
                     $add_client = $pdo->prepare('INSERT INTO clients (id, lastName, firstName, birthDate, card, cardNumber) VALUE (:client_number, :lastName, :firstName, :birthDate, :card, :number_card)');
@@ -222,25 +222,64 @@
             <input type="number" name="number_card_modif"><br>
             <input type="submit" name="modification" value="Modification">
         </form>
-        <?php 
-        // if(isset($nameModif) || !empty($nameModif) || isset($firstnameModif) || !empty($firstnameModif) || isset($birth_modif) || !empty($birth_modif) || isset($card_modif) || !empty($card_modif) || isset($number_modif) || !empty($number_modif)){
-        //     $nameModif = $_POST['lastname_modif'];
-        //     $firstnameModif = $_POST['firstname_modif'];
-        //     $birth_modif = $_POST['birth_modif'];
-        //     $card_modif = $_POST['card_modif'];
-        //     $number_modif = $_POST['number_card_modif']; 
-        //     if(isset($_POST['modification'])){
-        //         $modification = $pdo->prepare('UPDATE clients SET lastName=(:lastname_modif), firstName=(:firstname_modif), birthDate=(:birth_modif), card=(:card_modif), cardNumber=(:number_card_modif) WHERE id=(:number_modif);');
-        //         $modification->execute([
-        //             'lastname_modif' => $nameModif,
-        //             'firstname_modif' => $firstnameModif, 
-        //             'birth_modif' => $birth_modif, 
-        //             'card_modif' => $card_modif, 
-        //             'card_number_modif' => $number_modif, 
-        //         ]);
-        //     }
-        // }
+        <?php
+        $ID = $pdo->prepare('SELECT id FROM clients');
+        $ID->execute(); 
+        $ID_client = $ID->fetchAll(); 
         ?>
+        <?php 
+        if(isset($_POST['number_modif']) || !empty($_POST['number_modif']) || isset($_POST['lastname_modif']) || !empty($_POST['lastname_modif']) || isset($_POST['firstname_modif']) || !empty($_POST['firstname_modif']) || isset($_POST['birth_modif']) || !empty($_POST['birth_modif']) || isset($_POST['card_modif']) || !empty($_POST['card_modif']) || isset($_POST['number_card_modif']) || !empty($_POST['number_card_modif'])){
+            $nameModif = $_POST['lastname_modif'];
+            $firstnameModif = $_POST['firstname_modif'];
+            $birth_modif = $_POST['birth_modif'];
+            $card_modif = $_POST['card_modif'];
+            $number_modif = $_POST['number_modif']; 
+            $number_client_modif = $_POST['number_card_modif'];
+
+    if (isset($_POST['modification'])) {
+        // Récupération l'ID du client
+        $clientQuery = $pdo->prepare('SELECT id FROM clients WHERE id = :number_client');
+        $clientQuery->execute([
+            'number_client' => $number_modif
+        ]);
+        $client = $clientQuery->fetch(PDO::FETCH_ASSOC);
+        $ID_client = $client['id'];
+        //Modification avec l'ID obtenu
+        $modification = $pdo->prepare('UPDATE clients SET lastName=:lastname_modif, firstName=:firstname_modif, birthDate=:birth_modif, card=:card_modif, cardNumber=:number_card_modif WHERE id=:id_client');
+        $modification->execute([
+            'lastname_modif' => $nameModif,
+            'firstname_modif' => $firstnameModif, 
+            'birth_modif' => $birth_modif, 
+            'card_modif' => $card_modif, 
+            'number_card_modif' => $number_modif,
+            'id_client' => $ID_client
+        ]);
+    }
+        }
+        ?>
+        <!-- Supprimer une ligne de données en se basant sur l'ID du client  -->
+        <form action="" method="post">
+            <label for="id_client">Number client: </label>
+            <input type="number" name="id_client"><br>
+            <label for="nom_client">Lastname: </label>
+            <input type="text" name="nom_client"><br>
+            <label for="prenom_client">Firstname</label>
+            <input type="text" name="prenom_client"><br>
+            <input type="submit" name="delete_btn" value="Delete">
+        </form>
+        <?php
+                if(isset($_POST['id_client'], $_POST['nom_client'], $_POST['prenom_client'])){
+                    $id_client = $_POST['id_client']; 
+                    $nom_client = $_POST['nom_client']; 
+                    $prenom_client = $_POST['prenom_client']; 
+                    if(isset($_POST['delete_btn'])){
+                        $delete = $pdo->prepare('DELETE FROM clients WHERE id=:id_client'); 
+                        $delete->execute([
+                            'id_client' => $id_client
+                        ]); 
+                    }
+                }
+            ?>
         <h4>Summary table</h4>
         <table>
             <th>Client number</th>
